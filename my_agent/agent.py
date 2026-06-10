@@ -1,89 +1,80 @@
-from datetime import datetime
-from zoneinfo import ZoneInfo
 from google.adk.agents.llm_agent import Agent
-from google.adk.tools import google_search
 
-CITY_TIMEZONES = {
-    "athens": "Europe/Athens",
-    "london": "Europe/London",
-    "new york": "America/New_York",
-    "tokyo": "Asia/Tokyo",
-    "paris": "Europe/Paris",
-    "berlin": "Europe/Berlin",
-    "dubai": "Asia/Dubai",
-    "sydney": "Australia/Sydney",
-    "amsterdam": "Europe/Amsterdam",
+
+MOCK_CAMPAIGNS = {
+    "summer_sale": {"ctr": 6.2, "conversion_rate": 12.5, "spend": 5000},
+    "brand_awareness": {"ctr": 1.3, "conversion_rate": 1.8, "spend": 8000},
+    "product_launch": {"ctr": 3.8, "conversion_rate": 5.2, "spend": 12000},
+    "retargeting": {"ctr": 4.5, "conversion_rate": 8.9, "spend": 3000},
 }
 
 
-def get_current_time(city: str) -> dict:
-    """Returns the current time for a given city using its local timezone."""
-    timezone_str = CITY_TIMEZONES.get(city.lower())
-    if not timezone_str:
-        available = ", ".join(CITY_TIMEZONES.keys())
-        return {"status": "error", "message": f"City not found. Available: {available}"}
+def get_mock_campaign_data(campaign_name: str) -> dict:
+    """Returns mock performance metrics for a given campaign."""
+    #data = MOCK_CAMPAIGNS.get(campaign_name.lower().replace(" ", "_"))
+    data = MOCK_CAMPAIGNS.get(campaign_name.lower().replace(" campaign", "").strip().replace(" ", "_"))
+    if not data:
+        available = ", ".join(MOCK_CAMPAIGNS.keys())
+        return {"status": "error", "message": f"Campaign not found. Available: {available}"}
+    return {"status": "success", "campaign_name": campaign_name, **data}
 
-    now = datetime.now(ZoneInfo(timezone_str))
+
+def evaluate_performance(ctr: float, conversion_rate: float, spend: float) -> dict:
+    """Classifies campaign performance as High, Medium, or Low."""
+    if ctr > 5.0:
+        ctr_score = "High"
+    elif ctr > 2.0:
+        ctr_score = "Medium"
+    else:
+        ctr_score = "Low"
+
+    if conversion_rate > 10.0:
+        conv_score = "High"
+    elif conversion_rate > 3.0:
+        conv_score = "Medium"
+    else:
+        conv_score = "Low"
+
+    scores = [ctr_score, conv_score]
+    if scores.count("High") >= 2:
+        overall = "High"
+    elif scores.count("Low") >= 2:
+        overall = "Low"
+    else:
+        overall = "Medium"
+
     return {
         "status": "success",
-        "city": city,
-        "timezone": timezone_str,
-        "time": now.strftime("%H:%M:%S"),
-        "date": now.strftime("%Y-%m-%d"),
+        "ctr_performance": ctr_score,
+        "conversion_performance": conv_score,
+        "overall": overall,
     }
 
+
+campaign_agent = Agent(
+    model='gemini-2.5-flash',
+    name='campaign_agent',
+    description='Evaluates advertising campaign performance and classifies it as High, Medium, or Low.',
+    instruction=(
+        'You are a campaign performance analyst. '
+        'When asked about a campaign: first call get_mock_campaign_data to get the metrics, '
+        'then call evaluate_performance with those metrics. '
+        'Finally, summarize the results and give a recommendation.'
+        
+    ),
+    tools=[get_mock_campaign_data, evaluate_performance],
+)
 
 root_agent = Agent(
     model='gemini-2.5-flash',
     name='root_agent',
-    description='A helpful assistant that can search the web and tell the time.',
+    description='An orchestrator that routes questions to specialized sub-agents.',
     instruction=(
-        'You are a helpful assistant. '
-        'For current time or date questions, always use the get_current_time tool.'
+        'You are an orchestrator. '
+        'For campaign performance questions, delegate to campaign_agent. '
+        'For anything else, answer from your knowledge.'
+        "Use the campaign name exactly as given without appending the word 'campaign'. Valid names are: summer_sale, brand_awareness, product_launch, retargeting."
     ),
-    tools=[get_current_time],
+    sub_agents=[campaign_agent],
 )
 
-
-
-
-# from google.adk.agents.llm_agent import Agent
-# from google.adk.tools import google_search
-
-# root_agent = Agent(
-#     model='gemini-2.5-flash',
-#     name='root_agent',
-#     description='A helpful assistant that can search the web.',
-#     #instruction='Answer user questions to the best of your knowledge. When you need up-to-date information, use the google_search tool.',
-#     instruction='Always use the google_search tool for any question about current date, time, weather, news, or any real-time information. Never answer these from memory.',
-#     tools=[google_search],
-# )
-
-
-# from datetime import datetime
-# from google.adk.agents.llm_agent import Agent
-# from google.adk.tools import google_search
-
-
-# def get_current_time(city: str) -> dict:
-#     """Returns the current time from the machine's clock."""
-#     now = datetime.now()
-#     return {
-#         "status": "success",
-#         "city": city,
-#         "time": now.strftime("%H:%M:%S"),
-#         "date": now.strftime("%Y-%m-%d"),
-#     }
-
-
-# root_agent = Agent(
-#     model='gemini-2.5-flash',
-#     name='root_agent',
-#     description='A helpful assistant that can search the web and tell the time.',
-#     instruction=(
-#         'You are a helpful assistant. '
-#         'For current time or date questions, always use the get_current_time tool. '
-#         'For news, weather, or other real-time information, use google_search.'
-#     ),
-#     tools=[get_current_time, google_search],
-# )

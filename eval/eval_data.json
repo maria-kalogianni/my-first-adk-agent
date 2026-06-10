@@ -1,0 +1,71 @@
+[
+  {
+    "name": "test_summer_sale",
+    "data": [
+      {
+        "query": "How is the summer_sale campaign performing?",
+        "expected_tool_use": [
+          {
+            "tool_name": "transfer_to_agent",
+            "tool_input": {"agent_name": "campaign_agent"}
+          },
+          {
+            "tool_name": "get_mock_campaign_data",
+            "tool_input": {"campaign_name": "summer_sale"}
+          },
+          {
+            "tool_name": "evaluate_performance",
+            "tool_input": {"ctr": 6.2, "conversion_rate": 12.5, "spend": 5000.0}
+          }
+        ],
+        "reference": "The summer_sale campaign is performing exceptionally well, with both conversion rate and click-through rate classified as High. The overall performance is also High. Recommendation: Based on the strong performance, continue to invest in and potentially scale the summer_sale campaign."
+      }
+    ]
+  },
+  {
+    "name": "test_brand_awareness",
+    "data": [
+      {
+        "query": "Evaluate the brand_awareness campaign",
+        "expected_tool_use": [
+          {
+            "tool_name": "transfer_to_agent",
+            "tool_input": {"agent_name": "campaign_agent"}
+          },
+          {
+            "tool_name": "get_mock_campaign_data",
+            "tool_input": {"campaign_name": "brand_awareness"}
+          },
+          {
+            "tool_name": "evaluate_performance",
+            "tool_input": {"ctr": 1.3, "conversion_rate": 1.8, "spend": 8000.0}
+          }
+        ],
+        "reference": "The brand_awareness campaign is currently performing at a Low level across all key metrics, including Click-Through Rate (CTR) and Conversion Rate. Both CTR and Conversion Rate are classified as Low. Recommendation: This campaign is significantly underperforming. A thorough review of the targeting, ad creative, and budget allocation is strongly recommended."
+      }
+    ]
+  },
+  {
+    "name": "test_retargeting",
+    "data": [
+      {
+        "query": "Evaluate the retargeting campaign",
+        "expected_tool_use": [
+          {
+            "tool_name": "transfer_to_agent",
+            "tool_input": {"agent_name": "campaign_agent"}
+          },
+          {
+            "tool_name": "get_mock_campaign_data",
+            "tool_input": {"campaign_name": "retargeting campaign"}
+          },
+          {
+            "tool_name": "evaluate_performance",
+            "tool_input": {"ctr": 4.5, "conversion_rate": 8.9, "spend": 3000.0}
+          }
+        ],
+        "reference": "The retargeting campaign is currently performing at a Medium level across all key metrics, including Click-Through Rate (CTR) and Conversion Rate. Both CTR and Conversion Rate are classified as Medium. Recommendation: To improve performance, consider reviewing the campaign creatives, targeting parameters, and landing page experience. A/B testing different ad copy and call-to-actions could help boost results."
+      }
+    ]
+  }
+]
